@@ -1,11 +1,13 @@
 {
-  "install": {
-    "cmd": "npm install --legacy-peer-deps"
+  "steps": {
+    "install": {
+      "cmd": "npm install --legacy-peer-deps"
+    },
+    "build": {
+      "cmd": "npx nest build"
+    }
   },
-  "build": {
-    "cmd": "npm run build"
-  },
-  "start": {
-    "cmd": "npm run start:prod"
+  "deploy": {
+    "cmd": "node dist/main"
   }
 }
