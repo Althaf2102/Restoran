@@ -1,0 +1,112 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum Role {
+  admin
+  kasir
+  pelanggan
+}
+
+enum KategoriMenu {
+  makanan
+  minuman
+}
+
+enum StatusPesanan {
+  baru
+  diproses
+  selesai
+  dibatalkan
+}
+
+enum MetodePembayaran {
+  TUNAI
+  QRIS
+  TRANSFER_BANK
+}
+
+
+model User {
+  id         Int      @id @default(autoincrement())
+  nama       String   @db.VarChar(100)
+  email      String   @unique @db.VarChar(100)
+  password   String   @db.VarChar(255)
+  role       Role     @default(pelanggan)
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  pesanan    Pesanan[]
+
+  @@map("users")
+}
+
+model Menu {
+  id          Int          @id @default(autoincrement())
+  nama_menu    String       @db.VarChar(100) @map("nama_menu")
+  kategori    KategoriMenu
+  deskripsi   String?      @db.Text
+  harga       Decimal      @db.Decimal(10, 2)
+  foto        String?      @db.VarChar(255)
+  stok        Int          @default(0)
+  tersedia    Boolean      @default(true)
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  detailPesanan DetailPesanan[]
+  
+
+  @@map("menus")
+}
+
+model Pesanan {
+  id             Int           @id @default(autoincrement())
+  kode_pesanan    String        @unique @db.VarChar(30) @map("kode_pesanan")
+  pelangganId    Int?          @map("pelanggan_id")
+  pelanggan      User?         @relation(fields: [pelangganId], references: [id])
+  nama_pelanggan  String        @db.VarChar(100) @map("nama_pelanggan")
+  totalHarga     Decimal       @db.Decimal(10, 2) @map("total_harga")
+  status         StatusPesanan @default(baru)
+  catatan        String?       @db.Text
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  detail         DetailPesanan[]
+  pembayaran    Pembayaran[]
+
+  @@map("pesanan")
+}
+
+model DetailPesanan {
+  id           Int     @id @default(autoincrement())
+
+  pesananId    Int     @map("pesanan_id")
+  pesanan      Pesanan @relation(fields: [pesananId], references: [id], onDelete: Cascade)
+
+  menuId       Int     @map("menu_id")
+  menu         Menu    @relation(fields: [menuId], references: [id])
+
+  jumlah       Int
+  harga_saat_ini Decimal @db.Decimal(10, 2) @map("harga_saat_ini")
+  subtotal     Decimal @db.Decimal(10, 2)
+  
+
+  @@map("detail_pesanan")
+}
+
+model Pembayaran {
+  id          Int              @id @default(autoincrement())
+  metode      MetodePembayaran @default(TUNAI)
+  totalBayar  Decimal          @db.Decimal(10, 2)
+  kembalian   Decimal          @db.Decimal(10, 2) @default(0)
+  waktuBayar  DateTime         @default(now())
+
+  // Relasi ke Pesanan
+  pesananId   Int              @unique
+  pesanan     Pesanan          @relation(fields: [pesananId], references: [id])
+}

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `pembayaran` MODIFY `metode` ENUM('TUNAI', 'QRIS', 'TRANSFER_BANK') NOT NULL DEFAULT 'TUNAI';
