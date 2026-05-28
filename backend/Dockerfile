@@ -3,12 +3,12 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps --include=dev
 
 COPY . .
 RUN npx prisma generate --schema=src/prisma/schema.prisma
-RUN npx nest build || true
-RUN ls -la && ls -la dist/ || echo "dist folder not found"
+RUN npx nest build
+RUN ls -la dist/
 
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
