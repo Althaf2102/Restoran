@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
 COPY . .
-RUN npx prisma generate
+RUN npx prisma generate --schema=src/prisma/schema.prisma
 RUN npx nest build
 
 EXPOSE 3000
