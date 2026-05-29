@@ -32,6 +32,8 @@ export class PembayaranService {
       throw new BadRequestException('Pesanan yang sudah dibatalkan tidak bisa dibayar!');
     }
 
+    
+
     // Validasi: Apakah uang yang dibayarkan cukup?
     const totalHarga = Number(pesanan.totalHarga);
     if (dto.totalBayar < totalHarga) {

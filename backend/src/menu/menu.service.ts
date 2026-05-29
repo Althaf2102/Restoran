@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { createMenudto } from './DTO/create-menu.dto';
 import { updateMenudto } from './DTO/update-menu.dto';
 import { KategoriMenu } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 
 @Injectable()

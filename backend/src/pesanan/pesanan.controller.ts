@@ -13,12 +13,12 @@ import {
 import { PesananService } from './pesanan.service';
 import { CreatePesananDto } from './DTO/create-pesanan.dto';
 import { updatePesananDto } from './DTO/update-pesanan.dto'; // Catatan: perhatikan huruf kecil/besar di DTO-mu
-import { JwtStrategy } from 'src/auth/strategies/jwt.strategy';
-import { RolesGuard } from 'src/auth/guards/role.guard';
-import { Roles } from 'src/auth/decorators/roles.decorator';
+import { JwtStrategy } from '../auth/strategies/jwt.strategy';
+import { RolesGuard } from '../auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('pesanan')
 @ApiBearerAuth()

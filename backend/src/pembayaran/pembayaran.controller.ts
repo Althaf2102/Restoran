@@ -13,12 +13,12 @@ import {
 import { PembayaranService } from './pembayaran.service';
 import { CreatePembayaranDto } from './DTO/create-pembayaran.dto';
 import { UpdatePembayaranDto } from './DTO/update-pembayaran.dto';
-import { JwtStrategy } from 'src/auth/strategies/jwt.strategy';
-import { RolesGuard } from 'src/auth/guards/role.guard';
-import { Roles } from 'src/auth/decorators/roles.decorator';
+import { JwtStrategy } from '../auth/strategies/jwt.strategy';
+import { RolesGuard } from '../auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('pembayaran')
 @ApiBearerAuth()
