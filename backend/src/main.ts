@@ -27,8 +27,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-// Bersih, simpel, dan kompatibel dengan Railway maupun lokal
-await app.listen(process.env.PORT || 3000);
 
+  // Sederhana, aman untuk lokal, dan otomatis membaca PORT dinamis dari Railway
+  await app.listen(process.env.PORT || 3000);
 }
+
 bootstrap();

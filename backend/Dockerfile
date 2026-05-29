@@ -5,18 +5,20 @@ WORKDIR /app
 # 1. Salin file package manager
 COPY package*.json ./
 
-# 2. Install dependensi lengkap
+# 2. Install dependencies lengkap
 RUN npm install --legacy-peer-deps
 
-# 3. Salin seluruh source code project dari laptop ke Docker
+# 3. Salin seluruh source code project
 COPY . .
 
-# 4. Generate Client Prisma
+# 4. HAPUS paksa cache lokal bawaan laptop agar tidak membingungkan server
+RUN rm -f tsconfig.build.tsbuildinfo
+
+# 5. Generate Client Prisma
 RUN npx prisma generate --schema=src/prisma/schema.prisma
 
-# 5. Compile TypeScript (NestJS) menjadi JavaScript biasa
+# 6. Jalankan build murni tanpa interupsi cache
 RUN ./node_modules/.bin/nest build
 
-# 6. PERINTAH SAKTI (DIAGNOSTIK): 
-#    Jangan nyalakan aplikasi dulu. Cetak dulu semua isi folder untuk kita intip bareng-bareng!
-CMD echo "=== ISI FOLDER UTAMA APP ===" && ls -la && echo "=== ISI FOLDER HASIL BUILD DIST ===" && ls -la dist || echo "Folder dist tidak ada!"
+# 7. Nyalakan aplikasinya langsung dari main.js!
+CMD ["node", "dist/main.js"]
