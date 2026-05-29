@@ -27,6 +27,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(3000);
+  // Menggunakan port dinamis dari Railway, atau port 3000 jika di laptop sendiri
+const port = process.env.PORT || 3000;
+await app.listen(port);
 }
 bootstrap();
