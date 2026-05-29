@@ -7,8 +7,7 @@ WORKDIR /app
 COPY . .
 
 # 1. Pastikan Prisma Client ter-generate
-RUN npx prisma generate --schema=src/prisma/schema.prisma
-
+RUN npx prisma@6 generate --schema=src/prisma/schema.prisma
 # 2. Ganti cara build menggunakan npx (lebih aman)
 RUN npx nest build
 
@@ -18,4 +17,4 @@ RUN ls -la
 EXPOSE 3000
 
 # Perbaikan format CMD menggunakan format shell biasa
-CMD npx prisma migrate deploy --schema=src/prisma/schema.prisma && node dist/main.js
+CMD npx prisma@6 migrate deploy --schema=src/prisma/schema.prisma && node dist/main.js
