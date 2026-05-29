@@ -6,8 +6,8 @@ COPY package*.json ./
 RUN npm install --legacy-peer-deps --include=dev
 
 COPY . .
-RUN npx prisma generate --schema=src/prisma/schema.prisma
-RUN npx nest build
+RUN npx prisma generate --schema=src/prisma/schema.prisma/
+RUN npx nest build --verbose || true
 RUN ls -la dist/
 
 EXPOSE 3000

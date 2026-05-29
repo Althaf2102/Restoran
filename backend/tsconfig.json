@@ -1,8 +1,4 @@
 {
-  "compilerOptions": {
-    "paths": {
-    "src/*": ["./*"]
-  },
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
@@ -21,4 +17,4 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   }
-}
+
