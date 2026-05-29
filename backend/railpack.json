@@ -1,13 +1,11 @@
 {
-  "steps": {
-    "install": {
-      "cmd": "npm install --legacy-peer-deps"
-    },
-    "build": {
-      "cmd": "npx nest build"
-    }
+  "install": {
+    "cmd": "npm install --legacy-peer-deps"
+  },
+  "build": {
+    "cmd": "npx prisma generate --schema=src/prisma/schema.prisma && npm run build"
   },
   "deploy": {
-    "cmd": "node dist/main"
+    "cmd": "node dist/main.js"
   }
 }
