@@ -12,4 +12,4 @@ RUN ./node_modules/.bin/nest build
 
 EXPOSE 3000
 
-CMD npx prisma migrate deploy --schema=src/prisma/schema.prisma && node dist/main.js
+CMD npx prisma migrate deploy --schema=src/prisma/schema.prisma && ls -la dist && node dist/main.js
