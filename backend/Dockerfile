@@ -2,20 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 1. Salin file package manager
+# 1. Salin manifes dependencies
 COPY package*.json ./
 
-# 2. Install dependencies lengkap
-RUN npm install --legacy-peer-deps
+# 2. Hanya install modul produksi biar proses deploy kilat
+RUN npm install --production --legacy-peer-deps
 
-# 3. Salin seluruh source code project
-COPY . .
+# 3. Salin folder hasil build lokal (dist) dan folder prisma
+COPY dist ./dist
+COPY src/prisma ./src/prisma
 
-# 4. Hapus paksa cache lokal bawaan laptop
-RUN rm -f tsconfig.build.tsbuildinfo
-
-# 5. Generate Client Prisma
+# 4. Generate Client Prisma
 RUN npx prisma generate --schema=src/prisma/schema.prisma
 
-# 6. Pindahkan build ke runtime agar error-nya tidak disembunyikan Railway
-CMD ./node_modules/.bin/nest build && node dist/main.js
+# 5. Langsung gass jalankan aplikasi!
+CMD ["node", "dist/main.js"]
