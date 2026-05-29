@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "build": "npx prisma generate && nest build",
+    "prebuild": "npx prisma generate",
+    "build": "nest build",
+    "start": "nest start",
     "start:prod": "node dist/main.js"
 
   },
