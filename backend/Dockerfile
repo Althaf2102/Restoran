@@ -2,18 +2,20 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 1. Salin package manager files
+# 1. Salin file package manager
 COPY package*.json ./
 
-# 2. Install SEMUA dependencies
+# 2. Install dependencies lengkap
 RUN npm install --legacy-peer-deps
 
-# 3. Salin seluruh kode project tanpa kecuali
+# 3. Salin seluruh source code project
 COPY . .
 
-# 4. Generate Prisma Client secara bersih
+# 4. Generate Client Prisma
 RUN npx prisma generate --schema=src/prisma/schema.prisma
 
-# 5. Eksekusi Sakti Runtime: Jalankan build secara live di server, 
-#    lalu cari file main.js di root dist maupun di dalam subfolder src.
-CMD ./node_modules/.bin/nest build && (node dist/main.js || node dist/src/main.js)
+# 5. Compile NestJS langsung di tempat yang sama
+RUN ./node_modules/.bin/nest build
+
+# 6. Jalankan aplikasi secara langsung dari folder output
+CMD ["node", "dist/main.js"]
