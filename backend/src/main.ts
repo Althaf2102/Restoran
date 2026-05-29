@@ -27,9 +27,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-// Sederhana, bersih, dan tidak memicu error TypeScript
+// Bersih, simpel, dan kompatibel dengan Railway maupun lokal
 await app.listen(process.env.PORT || 3000);
-
 
 }
 bootstrap();
