@@ -2,15 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --legacy-peer-deps --include=dev
+# ... (bagian atas tetap sama)
 
 COPY . .
-RUN npx prisma generate --schema=src/prisma/schema.prisma
-RUN ./node_modules/.bin/nest build
 
-# Baris ls ini opsional untuk debugging, jika cache sudah bersih bisa dihapus nanti
-RUN ls -la dist/
+# 1. Pastikan Prisma Client ter-generate
+RUN npx prisma generate --schema=src/prisma/schema.prisma
+
+# 2. Ganti cara build menggunakan npx (lebih aman)
+RUN npx nest build
+
+# 3. KITA DEBUG: Hapus dulu perintah "RUN ls -la dist/", kita ganti pakai ini untuk melihat isi folder saat ini
+RUN ls -la
 
 EXPOSE 3000
 
