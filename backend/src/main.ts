@@ -6,8 +6,8 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-    app.enableCors({
-    origin: '*', 
+  app.enableCors({
+    origin: '*',
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
@@ -26,7 +26,6 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
 
   // Sederhana, aman untuk lokal, dan otomatis membaca PORT dinamis dari Railway
   await app.listen(process.env.PORT || 3000);
