@@ -34,7 +34,9 @@ export class PesananController {
     const idPelanggan = pelangganId ? parseInt(pelangganId, 10) : undefined;
     return this.pesananService.create(createPesananDto, idPelanggan);
   }
-
+  
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @Roles (Role.admin, Role.kasir)
   @Get()
   async findAll() {
     return this.pesananService.findAll();
