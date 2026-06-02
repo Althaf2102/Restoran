@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePesananDto } from './DTO/create-pesanan.dto';
 import { updatePesananDto } from './DTO/update-pesanan.dto';
 import { StatusPembayaran } from '@prisma/client';
+
 @Injectable()
 export class PesananService {
   constructor(private prisma: PrismaService) {}
@@ -16,20 +17,18 @@ export class PesananService {
 
 
   async create(dto: CreatePesananDto, pelangganId?: number) {
-    const menuIds = dto.items.map((item) => item.menuId);
-    const menus = await this.prisma.menu.findMany({
-      where: { id: { in: menuIds }, tersedia: true },
-    });
+  const menuIds = dto.items.map((item) => item.menuId);
+  const menus = await this.prisma.menu.findMany({
+    where: { id: { in: menuIds }, tersedia: true },
+  });
 
-  
-    if (menus.length !== menuIds.length) {
-      throw new BadRequestException(
-        'Beberapa menu tidak ditemukan atau tidak tersedia',
-      );
-    }
+  if (menus.length !== menuIds.length) {
+    throw new BadRequestException(
+      'Beberapa menu tidak ditemukan atau tidak tersedia',
+    );
+  }
 
-    
-    const detailData = dto.items.map((item) => {
+  const detailData = dto.items.map((item) => {
     const menu = menus.find((m) => m.id === item.menuId);
     if (!menu) throw new BadRequestException(`Menu ID ${item.menuId} tidak ditemukan`);
     const harga_saat_ini = Number(menu.harga);
@@ -40,34 +39,46 @@ export class PesananService {
       harga_saat_ini: harga_saat_ini,
       subtotal:     subtotal,
     };
-});
+  });
 
-    const totalHarga = detailData.reduce((sum, d) => sum + d.subtotal, 0);
+  const totalHarga = detailData.reduce((sum, d) => sum + d.subtotal, 0);
 
-    
-    const pesanan = await this.prisma.$transaction(async (tx) => {
-      return tx.pesanan.create({
-        data: {
-          kode_pesanan:   this.generateKodePesanan(),
-          nama_pelanggan: dto.namaPelanggan,
-          catatan:       dto.catatan,
-          totalHarga:    totalHarga,
-          Pembayaran: dto.pembayaran,
-          pelangganId:   pelangganId ?? null,
-          detail: {
-            create : detailData,
-          },
+  // PROSES SIMPAN KE DATABASE
+  const pesanan = await this.prisma.$transaction(async (tx) => {
+    return tx.pesanan.create({
+      data: {
+        kode_pesanan:   this.generateKodePesanan(),
+        nama_pelanggan: dto.namaPelanggan,
+        catatan:       dto.catatan,
+        totalHarga:    totalHarga,
+        pelangganId:   pelangganId ?? null,
+        
+        // 1. Hubungkan ke Detail Pesanan
+        detail: {
+          create: detailData,
         },
-        include: {
-          detail: {
-            include: { menu: true },
-          },
+
+        // 2. DI SINI PERBAIKANNYA: Otomatis buat data pembayaran sekalian!
+        pembayaran: {
+          create: {
+            metode: dto.metodePembayaran || 'TUNAI', // Diambil dari frontend
+            totalBayar: totalHarga, // Karena bayar pas lewat self-order/QRIS
+            kembalian: 0,
+          }
+        }
+      },
+      // Include pembayaran dan detail supaya response API mengembalikan data lengkap
+      include: {
+        detail: {
+          include: { menu: true },
         },
-      });
+        pembayaran: true, // Tambahkan ini agar data pembayarannya ikut keluar di response
+      },
     });
+  });
 
-    return pesanan;
-  }
+  return pesanan;
+}
 
 
   async findAll() {
