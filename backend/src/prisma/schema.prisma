@@ -89,7 +89,7 @@ model DetailPesanan {
   pesanan      Pesanan @relation(fields: [pesananId], references: [id], onDelete: Cascade)
 
   menuId       Int     @map("menu_id")
-  menu         Menu    @relation(fields: [menuId], references: [id])
+  menu      Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
 
   jumlah       Int
   harga_saat_ini Decimal @db.Decimal(10, 2) @map("harga_saat_ini")
