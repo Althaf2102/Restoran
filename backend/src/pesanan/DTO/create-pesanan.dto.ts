@@ -1,7 +1,5 @@
-import { IsString, IsOptional, IsArray, ValidateNested, IsNotEmpty, IsInt,IsEnum } from "class-validator";
 import { Type } from "class-transformer";
-import { StatusPembayaran } from "@prisma/client";
-import { MetodePembayaran } from "@prisma/client";
+import { IsInt, IsString, IsNotEmpty, IsOptional, IsArray, ValidateNested } from "class-validator";
 
 export class DetailPesananDto {
   @IsInt()
@@ -22,14 +20,10 @@ export class CreatePesananDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => DetailPesananDto)  // ← ini penting agar items ter-transform
+  @Type(() => DetailPesananDto)
   items!: DetailPesananDto[];
 
-  @IsEnum(MetodePembayaran)
+  @IsString()
   @IsNotEmpty()
-  metodePembayaran!: MetodePembayaran;
-
-  @IsOptional() // Opsional karena sudah ada default 'BELUM_LUNAS' di database
-  @IsEnum(StatusPembayaran)
-  pembayaran?: StatusPembayaran;
+  metodePembayaran!: string; // Cukup terima string 'TUNAI' / 'QRIS' dari frontend
 }

@@ -78,7 +78,6 @@ model Pesanan {
   nama_pelanggan  String        @db.VarChar(100) @map("nama_pelanggan")
   totalHarga     Decimal       @db.Decimal(10, 2) @map("total_harga")
   status         StatusPesanan @default(baru)
-  Pembayaran           StatusPembayaran @default(BELUM_LUNAS)
   catatan        String?       @db.Text
   createdAt      DateTime      @default(now()) @map("created_at")
 
@@ -106,13 +105,12 @@ model DetailPesanan {
 }
 
 model Pembayaran {
-  id          Int              @id @default(autoincrement())
-  metode      MetodePembayaran @default(TUNAI)
-  totalBayar  Decimal          @db.Decimal(10, 2)
-  kembalian   Decimal          @db.Decimal(10, 2) @default(0)
-  waktuBayar  DateTime         @default(now())
-
-  // Relasi ke Pesanan
-  pesananId   Int              @unique
-  pesanan     Pesanan          @relation(fields: [pesananId], references: [id])
+  id          Int      @id @default(autoincrement())
+  metode      MetodePembayaran
+  totalBayar  Decimal  @db.Decimal(10, 2)
+  kembalian   Decimal  @db.Decimal(10, 2)
+  waktuBayar  DateTime @default(now())
+  
+  pesananId   Int      @unique
+  pesanan     Pesanan  @relation(fields: [pesananId], references: [id])
 }

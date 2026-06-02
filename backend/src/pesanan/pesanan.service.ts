@@ -2,7 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePesananDto } from './DTO/create-pesanan.dto';
 import { updatePesananDto } from './DTO/update-pesanan.dto';
-import { StatusPembayaran } from '@prisma/client';
+import { MetodePembayaran } from '@prisma/client';
+
 
 @Injectable()
 export class PesananService {
@@ -61,7 +62,7 @@ export class PesananService {
         // 2. DI SINI PERBAIKANNYA: Otomatis buat data pembayaran sekalian!
         pembayaran: {
           create: {
-            metode: dto.metodePembayaran || 'TUNAI', // Diambil dari frontend
+            metode: (dto.metodePembayaran as MetodePembayaran) || MetodePembayaran.TUNAI, // 'TUNAI' | 'QRIS'
             totalBayar: totalHarga, // Karena bayar pas lewat self-order/QRIS
             kembalian: 0,
           }
