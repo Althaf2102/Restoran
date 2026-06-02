@@ -41,20 +41,24 @@ export class MenuService {
     
     }
     
-    async update(id:number, dto:updateMenudto) {
-     await this.findOne(id);
-    return this.prisma.menu.update({
-  where: { id },
-  data: {
-    ...dto,
-  },
-});
+async update(id: number, dto: updateMenudto) {
+ 
+  const menuLama = await this.findOne(id);
+  const namaFoto = dto.foto ? dto.foto : menuLama.foto;
+  return this.prisma.menu.update({
+    where: { id },
+    data: {
+      ...dto,
+      foto: namaFoto,
+    },
+  });
+}
     
-    }
-    
-    async remove(id:number)  {
-     await this.findOne(id);
-     this.prisma.menu.delete ({where:{id}})
-      return {message : 'menu dengan ID ${id} telah dihapus'}
-    }
+async remove(id: number) {
+    await this.findOne(id);
+    await this.prisma.menu.delete({
+    where: { id },
+  });
+return { message: `Menu dengan ID ${id} telah berhasil dihapus` };
+}
 }
