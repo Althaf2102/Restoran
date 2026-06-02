@@ -86,6 +86,7 @@ export class PesananService {
     return this.prisma.pesanan.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
+        pembayaran: true,
         detail: {
           include: { menu: true },
         },
