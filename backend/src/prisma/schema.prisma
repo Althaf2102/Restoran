@@ -34,6 +34,11 @@ enum MetodePembayaran {
   TRANSFER_BANK
 }
 
+enum StatusPembayaran {
+  LUNAS
+  BELUM_LUNAS
+}
+
 
 model User {
   id         Int      @id @default(autoincrement())
@@ -73,6 +78,7 @@ model Pesanan {
   nama_pelanggan  String        @db.VarChar(100) @map("nama_pelanggan")
   totalHarga     Decimal       @db.Decimal(10, 2) @map("total_harga")
   status         StatusPesanan @default(baru)
+  Pembayaran           StatusPembayaran @default(BELUM_LUNAS)
   catatan        String?       @db.Text
   createdAt      DateTime      @default(now()) @map("created_at")
 

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePesananDto } from './DTO/create-pesanan.dto';
 import { updatePesananDto } from './DTO/update-pesanan.dto';
-
+import { StatusPembayaran } from '@prisma/client';
 @Injectable()
 export class PesananService {
   constructor(private prisma: PrismaService) {}
@@ -52,6 +52,7 @@ export class PesananService {
           nama_pelanggan: dto.namaPelanggan,
           catatan:       dto.catatan,
           totalHarga:    totalHarga,
+          Pembayaran: dto.pembayaran,
           pelangganId:   pelangganId ?? null,
           detail: {
             create : detailData,
