@@ -56,7 +56,7 @@ const pesanan = await this.prisma.$transaction(async (tx) => {
       totalHarga:     totalHarga,
       pelangganId:    pelangganId, 
       
-n
+
       detail: {
         create: detailData,
       },
