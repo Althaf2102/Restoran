@@ -47,38 +47,40 @@ async create(dto: CreatePesananDto, pelangganIdRaw?: any) {
 
   const penentuanStatus = dto.metodePembayaran === 'QRIS' ? 'LUNAS' : 'BELUM_LUNAS';
 
-
-  const pesanan = await this.prisma.$transaction(async (tx) => {
-    return tx.pesanan.create({
-      data: {
-        kode_pesanan:   this.generateKodePesanan(),
-        nama_pelanggan: dto.namaPelanggan,
-        catatan:        dto.catatan,
-        totalHarga:     totalHarga,
-        pelangganId:    pelangganId, 
-        detail: {
-          create: detailData,
-        },
-
-        pembayaran: {
-          create: [
-            {
-              metode:     dto.metodePembayaran || 'TUNAI',
-              totalBayar: totalHarga,
-              kembalian:  0,
-              status:     penentuanStatus, 
-            } as any
-          ]
-        }
+const pesanan = await this.prisma.$transaction(async (tx) => {
+  return tx.pesanan.create({
+    data: {
+      kode_pesanan:   this.generateKodePesanan(),
+      nama_pelanggan: dto.namaPelanggan,
+      catatan:        dto.catatan,
+      totalHarga:     totalHarga,
+      pelangganId:    pelangganId, 
+      
+n
+      detail: {
+        create: detailData,
       },
-      include: {
-        detail: {
-          include: { menu: true },
-        },
-        pembayaran: true, 
+
+      pembayaran: {
+        create: [
+          {
+            metode:     dto.metodePembayaran || 'TUNAI',
+            totalBayar: totalHarga,
+            kembalian:  0,
+            
+          }
+        ]
+      }
+    },
+    include: {
+      detail: {
+        include: { menu: true },
       },
-    });
+      pembayaran: true, 
+    },
   });
+});
+  
 
   return pesanan;
 }
