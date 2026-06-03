@@ -68,8 +68,8 @@ export class PesananService {
             metode:     (dto.metodePembayaran as MetodePembayaran) || MetodePembayaran.TUNAI, 
             totalBayar: totalHarga, 
             kembalian:  0,
-            status:     penentuanStatus, // <--- FIELD BARU BERKESINAMBUNGAN MASUK KE SINI
-          }
+            status:     penentuanStatus,  
+          }as any
         }
       },
       include: {
