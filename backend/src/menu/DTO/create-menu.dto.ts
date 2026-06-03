@@ -21,9 +21,9 @@ deskripsi ! : string;
 @IsNotEmpty()
 harga !: number;
 
-@IsString()
+
 @IsOptional()
-foto ? : string;
+foto ? : any;
 
 @Type(()=>Number)
 @IsInt()

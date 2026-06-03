@@ -13,6 +13,8 @@ import { Role } from '@prisma/client';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import {extname} from 'path';
 
 @ApiTags('menu')
 @ApiBearerAuth()
@@ -31,19 +33,33 @@ export class MenuController {
     return this.menuService.findOne(id);
   }
 
-  
- 
- @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.admin)
-@Post()                                    // ← pastikan ini ada
-@UseInterceptors(FileInterceptor('foto'))
-create(
+@Post()
+@UseInterceptors(
+  FileInterceptor('foto', {
+    storage: diskStorage({
+      // 1. Tentukan folder tujuan penyimpanan file gambar di backend
+      destination: './uploads', 
+      filename: (req, file, callback) => {
+        // 2. Buat nama file unik agar tidak bentrok (contoh: 1717400000-836482.jpg)
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        callback(null, `${uniqueSuffix}${ext}`);
+      },
+    }),
+  }),
+)
+async create(
   @Body() dto: createMenudto,
-  @UploadedFile() file: Express.Multer.File
+  @UploadedFile() file: Express.Multer.File,
 ) {
-  dto.foto = file?.filename;
+  // Sekarang file.filename DIJAMIN ada nilainya dan tidak akan undefined lagi!
+  dto.foto = file ? file.filename : null; 
+  
   return this.menuService.create(dto);
 }
+ 
 
   @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.admin)
