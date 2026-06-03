@@ -109,11 +109,7 @@ model Pembayaran {
   metode      MetodePembayaran
   totalBayar  Decimal  @db.Decimal(10, 2)
   kembalian   Decimal  @db.Decimal(10, 2)
-    StatusPembayaran StatusPembayaran @defaul
-    
-    
-    
-    t (BELUM_LUNAS) 
+    StatusPembayaran StatusPembayaran @default (BELUM_LUNAS) 
   waktuBayar  DateTime @default(now())
    
   
