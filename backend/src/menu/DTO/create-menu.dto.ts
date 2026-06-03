@@ -22,8 +22,7 @@ deskripsi ! : string;
 harga !: number;
 
 
-@IsOptional()
-foto ? : any;
+
 
 @Type(()=>Number)
 @IsInt()

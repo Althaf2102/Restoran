@@ -36,19 +36,13 @@ export class MenuController {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.admin)
 @Post()
-@UseInterceptors(FileInterceptor('foto'))
 async createMenu(
   @Body() dto: createMenudto, 
-  @UploadedFile() file: Express.Multer.File
 ) {
-  // Masukkan nama file yang disimpan oleh multer ke properti dto.foto
-  dto.foto = file ? file.filename : null; 
-  
-  // Kirim dto yang sudah tervalidasi dan bersih ke service
-  return this.menuService.create(dto);
+   return this.menuService.create(dto);
 }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.admin)
 @Patch(':id')
 @UseInterceptors(FileInterceptor('foto')) 
@@ -57,7 +51,6 @@ update(
   @Body() dto: updateMenudto,
   @UploadedFile() file?: Express.Multer.File,  // ← tambahkan ini
 ) {
-  if (file) dto.foto = file.filename;
   return this.menuService.update(id, dto);
 }
 

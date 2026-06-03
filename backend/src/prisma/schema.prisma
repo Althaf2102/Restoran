@@ -59,7 +59,6 @@ model Menu {
   kategori    KategoriMenu
   deskripsi   String?      @db.Text
   harga       Decimal      @db.Decimal(10, 2)
-  foto        String?      @db.VarChar(255)
   stok        Int          @default(0)
   tersedia    Boolean      @default(true)
   createdAt   DateTime     @default(now()) @map("created_at")

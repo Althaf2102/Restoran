@@ -24,10 +24,6 @@ deskripsi ? : string;
 @IsOptional()
 harga ?: number;
 
-@IsString()
-@IsOptional()
-foto ? : string;
-
 @Type(() => Number)
 @IsInt()
 @IsOptional()

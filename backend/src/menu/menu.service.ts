@@ -16,7 +16,6 @@ export class MenuService {
       kategori:  dto.kategori,
       deskripsi: dto.deskripsi,
       harga:     dto.harga,
-      foto:      dto.foto,
       tersedia:  dto.tersedia ?? true,
       stok:      dto.stok,
     },
@@ -43,12 +42,10 @@ export class MenuService {
 async update(id: number, dto: updateMenudto) {
  
   const menuLama = await this.findOne(id);
-  const namaFoto = dto.foto ? dto.foto : menuLama.foto;
   return this.prisma.menu.update({
     where: { id },
     data: {
       ...dto,
-      foto: namaFoto,
     },
   });
 }
