@@ -1,5 +1,5 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsPositive, Min } from 'class-validator';
-import { MetodePembayaran } from '@prisma/client';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { MetodePembayaran, StatusPembayaran } from '@prisma/client';
 
 export class UpdatePembayaranDto {
   @IsNotEmpty({ message: 'ID Pesanan wajib diisi' })
@@ -13,7 +13,14 @@ export class UpdatePembayaranDto {
   metode?: MetodePembayaran;
 
   @IsNotEmpty({ message: 'Total bayar wajib diisi' })
-  @IsNumber({}, { message: 'Total bayar harus berupa angka' })
-  @IsPositive({ message: 'Total bayar tidak boleh minus atau nol' })
+  // Diubah ke IsNumber jika di Swagger diinput angka biasa tanpa kutip
+  @IsNumber({}, { message: 'Total bayar harus berupa angka' }) 
   totalBayar?: number;
+
+  // 1. TAMBAHKAN PROPERTY INI AGAR SWAGGER & NESTJS BISA MEMBACA INPUT STATUS
+  @IsNotEmpty({ message: 'Status pembayaran wajib diisi' })
+  @IsEnum(StatusPembayaran, {
+    message: 'Status pembayaran harus berupa BELUM_LUNAS atau LUNAS'
+  })
+  statusPembayaran?: StatusPembayaran;
 }

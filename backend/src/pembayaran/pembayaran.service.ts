@@ -3,7 +3,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePembayaranDto } from './DTO/create-pembayaran.dto';
 import { UpdatePembayaranDto } from './DTO/update-pembayaran.dto';
-import { StatusPesanan } from '@prisma/client';
+import { StatusPembayaran, StatusPesanan } from '@prisma/client';
 
 @Injectable()
 export class PembayaranService {
@@ -92,38 +92,49 @@ async create(dto: CreatePembayaranDto) {
   }
 
   // 4. UPDATE PEMBAYARAN
-  async update(id: number, dto: UpdatePembayaranDto) {
-    // Pastikan data pembayarannya ada dulu
-    const pembayaranExist = await this.findOne(id);
+ async update(id: number, dto: UpdatePembayaranDto) {
+  // Pastikan data pembayarannya ada dulu
+  const pembayaranExist = await this.findOne(id);
 
-    // Jika kasir memperbarui total bayar, hitung ulang kembaliannya
-    let kembalian = Number(pembayaranExist.kembalian);
-    if (dto.totalBayar) {
-      const pesanan = await this.prisma.pesanan.findUnique({
-        where: { id: pembayaranExist.pesananId }
-      });
-      
-      if (!pesanan) {
-        throw new NotFoundException('Pesanan terkait tidak ditemukan');
-      }
-
-      const totalHarga = Number(pesanan.totalHarga);
-      if (dto.totalBayar < totalHarga) {
-        throw new BadRequestException('Total bayar yang baru kurang dari total harga pesanan!');
-      }
-      kembalian = dto.totalBayar - totalHarga;
+  // Jika kasir memperbarui total bayar, hitung ulang kembaliannya
+  let kembalian = Number(pembayaranExist.kembalian);
+  
+  if (dto.totalBayar) {
+    const pesanan = await this.prisma.pesanan.findUnique({
+      where: { id: pembayaranExist.pesananId }
+    });
+    
+    if (!pesanan) {
+      throw new NotFoundException('Pesanan terkait tidak ditemukan');
     }
 
-    return this.prisma.pembayaran.update({
-      where: { id },
-      data: {
-        metode: dto.metode,
-        totalBayar: dto.totalBayar,
-        kembalian: kembalian
-      },
-    });
+    // Konversi totalHarga dari DB (String) ke Number untuk dihitung
+    const totalHarga = Number(pesanan.totalHarga);
+    
+    // Konversi input dto.totalBayar ke Number agar bisa dibandingkan dan dikurangi
+    const totalBayarNum = Number(dto.totalBayar);
+
+    if (totalBayarNum < totalHarga) {
+      throw new BadRequestException('Total bayar yang baru kurang dari total harga pesanan!');
+    }
+    
+    kembalian = totalBayarNum - totalHarga;
   }
 
+  // Jalankan update ke database
+  return this.prisma.pembayaran.update({
+    where: { id },
+    data: {
+      metode: dto.metode,
+      // Kita kembalikan ke String menggunakan .toString() agar sesuai tipe data DB kamu
+      totalBayar: dto.totalBayar ? dto.totalBayar.toString() : pembayaranExist.totalBayar,
+      kembalian: kembalian.toString(), 
+      
+      // INI YANG TADI HILANG:
+      statusPembayaran: dto.statusPembayaran, 
+    },
+  });
+}
   // 5. HAPUS PEMBAYARAN
   async remove(id: number) {
     const pembayaran = await this.findOne(id);
