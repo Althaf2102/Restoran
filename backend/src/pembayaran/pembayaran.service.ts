@@ -121,19 +121,17 @@ async create(dto: CreatePembayaranDto) {
     kembalian = totalBayarNum - totalHarga;
   }
 
-  // Jalankan update ke database
-  return this.prisma.pembayaran.update({
-    where: { id },
-    data: {
-      metode: dto.metode,
-      // Kita kembalikan ke String menggunakan .toString() agar sesuai tipe data DB kamu
-      totalBayar: dto.totalBayar ? dto.totalBayar.toString() : pembayaranExist.totalBayar,
-      kembalian: kembalian.toString(), 
-      
-      // INI YANG TADI HILANG:
-      statusPembayaran: dto.statusPembayaran, 
-    },
-  });
+ return this.prisma.pembayaran.update({
+  where: { id },
+  data: {
+    metode: dto.metode,
+    totalBayar: dto.totalBayar ? dto.totalBayar.toString() : pembayaranExist.totalBayar,
+    kembalian: kembalian.toString(), 
+    
+    // UBAH BAGIAN INI: Nama field di DB kamu adalah 'StatusPembayaran' (S besar)
+    StatusPembayaran: dto.statusPembayaran, 
+  },
+});
 }
   // 5. HAPUS PEMBAYARAN
   async remove(id: number) {
