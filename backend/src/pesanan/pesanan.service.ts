@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePesananDto } from './DTO/create-pesanan.dto';
 import { updatePesananDto } from './DTO/update-pesanan.dto';
-import { MetodePembayaran } from '@prisma/client';
+import { MetodePembayaran, StatusPembayaran } from '@prisma/client';
 
 
 @Injectable()
@@ -15,7 +15,6 @@ export class PesananService {
     const random = Math.floor(1000 + Math.random() * 9000);
     return `ORD-${tanggal}-${random}`;
   }
-
 
   async create(dto: CreatePesananDto, pelangganId?: number) {
   const menuIds = dto.items.map((item) => item.menuId);
@@ -44,42 +43,48 @@ export class PesananService {
 
   const totalHarga = detailData.reduce((sum, d) => sum + d.subtotal, 0);
 
+  // 1. LOGIKA PENENTUAN STATUS PEMBAYARAN BARU DI SINI
+  // Membaca metode dari dto frontend. Jika memilih QRIS otomatis LUNAS, jika TUNAI otomatis BELUM_LUNAS
+  const penentuanStatus = dto.metodePembayaran === 'QRIS' ? StatusPembayaran.LUNAS : StatusPembayaran.BELUM_LUNAS;
+
   // PROSES SIMPAN KE DATABASE
   const pesanan = await this.prisma.$transaction(async (tx) => {
     return tx.pesanan.create({
       data: {
         kode_pesanan:   this.generateKodePesanan(),
         nama_pelanggan: dto.namaPelanggan,
-        catatan:       dto.catatan,
-        totalHarga:    totalHarga,
-        pelangganId:   pelangganId ?? null,
+        catatan:        dto.catatan,
+        totalHarga:     totalHarga,
+        pelangganId:    pelangganId ?? null,
         
-        // 1. Hubungkan ke Detail Pesanan
+        // Hubungkan ke Detail Pesanan
         detail: {
           create: detailData,
         },
 
-        // 2. DI SINI PERBAIKANNYA: Otomatis buat data pembayaran sekalian!
+        // 2. DI SINI PENYESUAIAN PADA TABEL PEMBAYARAN
         pembayaran: {
           create: {
-            metode: (dto.metodePembayaran as MetodePembayaran) || MetodePembayaran.TUNAI, // 'TUNAI' | 'QRIS'
-            totalBayar: totalHarga, // Karena bayar pas lewat self-order/QRIS
-            kembalian: 0,
+            metode:     (dto.metodePembayaran as MetodePembayaran) || MetodePembayaran.TUNAI, 
+            totalBayar: totalHarga, 
+            kembalian:  0,
+            status:     penentuanStatus, // <--- FIELD BARU BERKESINAMBUNGAN MASUK KE SINI
           }
         }
       },
-      // Include pembayaran dan detail supaya response API mengembalikan data lengkap
       include: {
         detail: {
           include: { menu: true },
         },
-        pembayaran: true, // Tambahkan ini agar data pembayarannya ikut keluar di response
+        pembayaran: true, 
       },
     });
   });
 
   return pesanan;
 }
+
+ 
 
 
   async findAll() {

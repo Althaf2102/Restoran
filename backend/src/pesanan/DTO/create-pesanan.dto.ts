@@ -1,5 +1,6 @@
-import { Type } from "class-transformer";
-import { IsInt, IsString, IsNotEmpty, IsOptional, IsArray, ValidateNested } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested, IsEnum ,IsInt} from 'class-validator';
+import { Type } from 'class-transformer';
+import { MetodePembayaran } from '@prisma/client';
 
 export class DetailPesananDto {
   @IsInt()
@@ -23,7 +24,7 @@ export class CreatePesananDto {
   @Type(() => DetailPesananDto)
   items!: DetailPesananDto[];
 
-  @IsString()
+  @IsEnum(MetodePembayaran)
   @IsNotEmpty()
-  metodePembayaran!: string; // Cukup terima string 'TUNAI' / 'QRIS' dari frontend
+  metodePembayaran!: MetodePembayaran; 
 }
