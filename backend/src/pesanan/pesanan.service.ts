@@ -16,38 +16,38 @@ export class PesananService {
     return `ORD-${tanggal}-${random}`;
   }
 
-  async create(dto: CreatePesananDto, pelangganId?: number) {
-  const menuIds = dto.items.map((item) => item.menuId);
+async create(dto: CreatePesananDto, pelangganIdRaw?: any) {
+  // Amankan pelangganId query dari frontend (?pelangganId=1) menjadi Number murni / null
+  const pelangganId = pelangganIdRaw ? parseInt(String(pelangganIdRaw), 10) : null;
+
+  const menuIds = dto.items.map((item) => Number(item.menuId));
   const menus = await this.prisma.menu.findMany({
     where: { id: { in: menuIds }, tersedia: true },
   });
 
   if (menus.length !== menuIds.length) {
-    throw new BadRequestException(
-      'Beberapa menu tidak ditemukan atau tidak tersedia',
-    );
+    throw new BadRequestException('Beberapa menu tidak ditemukan atau tidak tersedia');
   }
 
   const detailData = dto.items.map((item) => {
-    const menu = menus.find((m) => m.id === item.menuId);
+    const menu = menus.find((m) => m.id === Number(item.menuId));
     if (!menu) throw new BadRequestException(`Menu ID ${item.menuId} tidak ditemukan`);
     const harga_saat_ini = Number(menu.harga);
-    const subtotal = harga_saat_ini * item.jumlah;
+    const subtotal = harga_saat_ini * Number(item.jumlah);
     return {
-      menuId:       item.menuId,
-      jumlah:       item.jumlah,
+      menuId:         Number(item.menuId),
+      jumlah:         Number(item.jumlah),
       harga_saat_ini: harga_saat_ini,
-      subtotal:     subtotal,
+      subtotal:       subtotal,
     };
   });
 
   const totalHarga = detailData.reduce((sum, d) => sum + d.subtotal, 0);
 
-  // 1. LOGIKA PENENTUAN STATUS PEMBAYARAN BARU DI SINI
-  // Membaca metode dari dto frontend. Jika memilih QRIS otomatis LUNAS, jika TUNAI otomatis BELUM_LUNAS
-  const penentuanStatus = dto.metodePembayaran === 'QRIS' ? StatusPembayaran.LUNAS : StatusPembayaran.BELUM_LUNAS;
 
-  // PROSES SIMPAN KE DATABASE
+  const penentuanStatus = dto.metodePembayaran === 'QRIS' ? 'LUNAS' : 'BELUM_LUNAS';
+
+
   const pesanan = await this.prisma.$transaction(async (tx) => {
     return tx.pesanan.create({
       data: {
@@ -55,21 +55,20 @@ export class PesananService {
         nama_pelanggan: dto.namaPelanggan,
         catatan:        dto.catatan,
         totalHarga:     totalHarga,
-        pelangganId:    pelangganId ?? null,
-        
-        // Hubungkan ke Detail Pesanan
+        pelangganId:    pelangganId, 
         detail: {
           create: detailData,
         },
 
-        // 2. DI SINI PENYESUAIAN PADA TABEL PEMBAYARAN
         pembayaran: {
-          create: {
-            metode:     (dto.metodePembayaran as MetodePembayaran) || MetodePembayaran.TUNAI, 
-            totalBayar: totalHarga, 
-            kembalian:  0,
-            status:     penentuanStatus,  
-          }as any
+          create: [
+            {
+              metode:     dto.metodePembayaran || 'TUNAI',
+              totalBayar: totalHarga,
+              kembalian:  0,
+              status:     penentuanStatus, 
+            } as any
+          ]
         }
       },
       include: {
@@ -83,9 +82,6 @@ export class PesananService {
 
   return pesanan;
 }
-
- 
-
 
   async findAll() {
     return this.prisma.pesanan.findMany({

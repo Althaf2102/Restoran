@@ -9,20 +9,19 @@ import { PrismaService } from '../prisma/prisma.service';
 export class MenuService {
     constructor(private prisma: PrismaService) {}
 
-    async create (dto:createMenudto) {
-       return this.prisma.menu.create ({
-        data :{
-            nama_menu : dto.nama_menu,
-            kategori : dto.kategori,
-            deskripsi : dto.deskripsi,
-            harga : dto.harga,
-            foto : dto.foto,
-            tersedia : dto.tersedia ?? true,
-            stok: dto.stok,
-
-        }
-       })
-    }
+    async create(dto: createMenudto) {
+  return this.prisma.menu.create({
+    data: {
+      nama_menu: dto.nama_menu,
+      kategori:  dto.kategori,
+      deskripsi: dto.deskripsi,
+      harga:     dto.harga,
+      foto:      dto.foto,
+      tersedia:  dto.tersedia ?? true,
+      stok:      dto.stok,
+    },
+  });
+}
     
     async findAll (kategori? : KategoriMenu)  {
         return this.prisma.menu.findMany({
