@@ -17,107 +17,71 @@ export class PesananService {
   }
 
 async create(dto: CreatePesananDto, pelangganIdRaw?: any) {
+  // Amankan pelangganId query dari frontend (?pelangganId=1) menjadi Number murni / null
+  const pelangganId = pelangganIdRaw ? parseInt(String(pelangganIdRaw), 10) : null;
 
-    const pelangganId = pelangganIdRaw ? parseInt(String(pelangganIdRaw), 10) : null;
+  const menuIds = dto.items.map((item) => Number(item.menuId));
+  const menus = await this.prisma.menu.findMany({
+    where: { id: { in: menuIds }, tersedia: true },
+  });
 
-    if (pelangganId && isNaN(pelangganId)) {
-      throw new BadRequestException('ID Pelanggan tidak valid');
-    }
-
- 
-    const menuIds = dto.items.map((item) => Number(item.menuId));
-
-  
-    const menus = await this.prisma.menu.findMany({
-      where: { 
-        id: { in: menuIds },
-        tersedia: true 
-      },
-    });
-
-    if (menus.length !== menuIds.length) {
-      throw new BadRequestException('Beberapa menu tidak ditemukan atau sudah habis');
-    }
-
-    const detailData = dto.items.map((item) => {
-      const menu = menus.find((m) => m.id === Number(item.menuId));
-      if (!menu) throw new BadRequestException(`Menu ID ${item.menuId} tidak ditemukan`);
-      
-      const harga_saat_ini = Number(menu.harga);
-      const jumlahPesanan = Number(item.jumlah);
-
-     
-      if (menu.stok < jumlahPesanan) {
-        throw new BadRequestException(`Stok untuk menu "${menu.nama_menu}" tidak mencukupi`);
-      }
-
-      const subtotal = harga_saat_ini * jumlahPesanan;
-      
-      return {
-        menuId:         Number(item.menuId),
-        jumlah:         jumlahPesanan,
-        harga_saat_ini: harga_saat_ini,
-        subtotal:       subtotal,
-      };
-    });
-
-
-    const totalHarga = detailData.reduce((sum, d) => sum + d.subtotal, 0);
-
-
-    const penentuanStatus = dto.metodePembayaran === 'QRIS' ? 'LUNAS' : 'BELUM_LUNAS';
-
-
-    const pesanan = await this.prisma.$transaction(async (tx) => {
-      
-    
-      for (const item of detailData) {
-        await tx.menu.update({
-          where: { id: item.menuId },
-          data: {
-            stok: { decrement: item.jumlah } 
-          }
-        });
-      }
-
-  
-      return tx.pesanan.create({
-        data: {
-          kode_pesanan:   `REQ-${Date.now()}`, 
-          nama_pelanggan: dto.namaPelanggan,
-          catatan:        dto.catatan || '',
-          totalHarga:     totalHarga,
-          pelangganId:    pelangganId, 
-
-         
-          detail: {
-            create: detailData,
-          },
-
-          
-          pembayaran: {
-            create: [
-              {
-                metode:     dto.metodePembayaran || 'TUNAI',
-                totalBayar: totalHarga,
-                kembalian:  0,
-                status:     penentuanStatus, 
-              } as any 
-            ]
-          }
-        },
-        include: {
-          detail: {
-            include: { menu: true },
-          },
-          pembayaran: true, 
-        },
-      });
-    });
-
-    return pesanan;
+  if (menus.length !== menuIds.length) {
+    throw new BadRequestException('Beberapa menu tidak ditemukan atau tidak tersedia');
   }
 
+  const detailData = dto.items.map((item) => {
+    const menu = menus.find((m) => m.id === Number(item.menuId));
+    if (!menu) throw new BadRequestException(`Menu ID ${item.menuId} tidak ditemukan`);
+    const harga_saat_ini = Number(menu.harga);
+    const subtotal = harga_saat_ini * Number(item.jumlah);
+    return {
+      menuId:         Number(item.menuId),
+      jumlah:         Number(item.jumlah),
+      harga_saat_ini: harga_saat_ini,
+      subtotal:       subtotal,
+    };
+  });
+
+  const totalHarga = detailData.reduce((sum, d) => sum + d.subtotal, 0);
+
+
+  const penentuanStatus = dto.metodePembayaran === 'QRIS' ? 'LUNAS' : 'BELUM_LUNAS';
+
+
+  const pesanan = await this.prisma.$transaction(async (tx) => {
+    return tx.pesanan.create({
+      data: {
+        kode_pesanan:   this.generateKodePesanan(),
+        nama_pelanggan: dto.namaPelanggan,
+        catatan:        dto.catatan,
+        totalHarga:     totalHarga,
+        pelangganId:    pelangganId, 
+        detail: {
+          create: detailData,
+        },
+
+        pembayaran: {
+          create: [
+            {
+              metode:     dto.metodePembayaran || 'TUNAI',
+              totalBayar: totalHarga,
+              kembalian:  0,
+              status:     penentuanStatus, 
+            } as any
+          ]
+        }
+      },
+      include: {
+        detail: {
+          include: { menu: true },
+        },
+        pembayaran: true, 
+      },
+    });
+  });
+
+  return pesanan;
+}
 
   async findAll() {
     return this.prisma.pesanan.findMany({
